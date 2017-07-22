@@ -7,6 +7,8 @@
 * [对齐](#JUMP_POINT_ALIGN)
 * [限制](#JUMP_POINT_LIMITATION)
 * [调试](#JUMP_POINT_DEBUG)
+* [格式](#JUMP_POINT_FORMAT)
+* [渲染](#JUMP_POINT_RENDER)
 
 <h3 id = "JUMP_POINT_PERFORMANCE">性能</h3>
 
@@ -47,4 +49,38 @@
 <h3 id = "JUMP_POINT_DEBUG">调试</h3>
 
 * 当shader使用了SV\_InstanceID, SV\_PrimitiveID, or SV\_VertexID三种系统值时，在VS的graphic debugger中无法对单个图元中的shader进行调试，会提示“此绘图调用使用影响像素历史纪录计算的系统值语义”("This draw call is using system-value semantics and interferes with pixel history computation")，这是因为这些值都是在GPU中生成的。
+* [返回目录](#JUMP_POINT_MENU)
+
+<h3 id = "JUMP_POINT_FORMAT">格式</h3>
+
+* Depth Stencil View(DSV) 只支持以下几种格式:
+
+    * DXGI\_FORMAT\_D16\_UNORM
+    * DXGI\_FORMAT\_D24\_UNORM\_S8\_UINT
+    * DXGI\_FORMAT\_D32\_FLOAT
+    * DXGI\_FORMAT\_D32\_FLOAT\_S8X24\_UINT
+    
+    但是这几种格式均不支持转换成Shader Resource View(SRV)，所以无法直接在Shader中读。
+
+    但是对于一个Depth Stencil Texture(DST)，其创建的格式与DSV和SRV的格式不必严格一致。所以我们可以按一种格式创建DST，然后按照另一种格式创建DSV，最后再按第三种格式创建SRV：
+
+        |DST|DSV|SRV|
+        |---:|---:|---:|
+        DXGI\_FORMAT\_R16\_TYPELESS|DXGI\_FORMAT\_D16\_UNORM|DXGI\_FORMAT\_R16\_UNORM
+        DXGI\_FORMAT\_R24G8\_TYPELESS|DXGI\_FORMAT\_D24\_UNORM\_S8\_UINT| DXGI\_FORMAT\_R24\_UNORM\_X8\_TYPELESS
+        DXGI\_FORMAT\_R32\_FLOAT|DXGI\_FORMAT\_D32\_FLOAT| DXGI\_FORMAT\_R32\_FLOAT
+        DXGI\_FORMAT\_R32G8X24\_TYPELESS | DXGI\_FORMAT\_D32\_FLOAT\_S8X24\_UINT |DXGI\_FORMAT\_R32\_FLOAT\_X8X24\_TYPELESS
+
+* [返回目录](#JUMP_POINT_MENU)
+
+<h3 id = "JUMP_POINT_RENDER">渲染</h3>
+
+* 矩阵变换
+
+    矩阵变换一般是以下路径：Local -> World -> View -> Projection，但是一般还有一个ViewPorts的变换，这个变换的矩阵从RSSetViewPorts中进行设置。
+
+* SV\_Position
+
+    VertexShader中SV\_Position不可读，也就是说如果你将一个变量放进SV\_Position中后，再取出，其值已经改变了。
+    另外PixelShader中读取的SV_Postion是经过ViewPorts变换过的值，与VS中输出的值不一样。
 * [返回目录](#JUMP_POINT_MENU)
