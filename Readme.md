@@ -32,13 +32,16 @@
             * 16 \~ 31 (当前类型)
             * 32 \~ 47 (当前类型)
     * 若当前类型位于段的开头，则不做调整。
-* 对于constant_buffer中的数组，则每个元素的开头必须位于段的开头。
+* 对于`constant_buffer`中的数组，则每个元素的开头必须位于段的开头。
     * 对于float\[100\]
         * 0 \~ 3 (float\[0\]), 4 \~ 15 (空)
         * 16 \~ 19 (float\[1\]), 20 \~ 31 (空)
         * 32 \~ 35 (float\[2\]), 36 \~ 47 (空)
         * ...
-* 对于structured_buffer，数组不需要位于段的开头。
+* 对于`structured_buffer`，数组不需要位于段的开头。
+
+* 关于Map，一般用于 `D3D11_USAGE_DYNAMIC` 的都只能用 `D3D11_MAP_WRITE_DISCARD` 或者 `D3D11_MAP_WRITE_NO_OVERWRITE`。 前者会让硬件重新创建一个相同大小的`buffer`，后者要保证当前写的内存不能被用于渲染中。而且一般渲染的时候GPU都会延迟1到3帧，Dx11有`Event`的方式进行控制，直到Dx12才有正式的控制方式。所以用到的 `D3D11_MAP_WRITE_NO_OVERWRITE` 一般会创建比原本大三到四倍的内存空间。所以还不如在用的时候直接创建。
+
 * [返回目录](#JUMP_POINT_MENU)
 
 <h3 id = "JUMP_POINT_LIMITATION">限制</h3>
@@ -55,10 +58,10 @@
 
 * Depth Stencil View(DSV) 只支持以下几种格式:
 
-    * DXGI\_FORMAT\_D16\_UNORM
-    * DXGI\_FORMAT\_D24\_UNORM\_S8\_UINT
-    * DXGI\_FORMAT\_D32\_FLOAT
-    * DXGI\_FORMAT\_D32\_FLOAT\_S8X24\_UINT
+    * `DXGI_FORMAT_D16_UNORM`
+    * `DXGI_FORMAT_D24_UNORM_S8_UINT`
+    * `DXGI_FORMAT_D32_FLOAT`
+    * `DXGI_FORMAT_D32_FLOAT_S8X24_UINT`
     
     但是这几种格式均不支持转换成Shader Resource View(SRV)，所以无法直接在Shader中读。
 
