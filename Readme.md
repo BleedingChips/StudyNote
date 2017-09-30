@@ -74,6 +74,12 @@
     DXGI\_FORMAT\_R32\_FLOAT|DXGI\_FORMAT\_D32\_FLOAT| DXGI\_FORMAT\_R32\_FLOAT
     DXGI\_FORMAT\_R32G8X24\_TYPELESS | DXGI\_FORMAT\_D32\_FLOAT\_S8X24\_UINT |DXGI\_FORMAT\_R32\_FLOAT\_X8X24\_TYPELESS
 
+* TYPELESS 类型
+
+    对于 Compute Shader 来讲，并不支持格式为 `R8G8B8A8_UNORM` 的 UAV ，反而在 `cs 5_0` 的时候支持 `R8G8B8A8_UINT` 但是格式为 `R8G8B8A8_UINT` 的 SRV 并不支持 Sample 。所以必须创建格式为  `R8G8B8A8_TYPELESS` 的纹理，然后以 `R8G8B8A8_UINT` 的格式创建 UAV ，然后以 `R8G8B8A8_UNORM` 的格式创建 SRV 。
+
+    另外如果是用 DirectX 的 SaveToWICFile 保存 `R8G8B8A8_TYPELESS` 格式的纹理时，在 CaptureTexture 之后，可以用 ScratchImage::OverrideFormat 强制转换类型为 `R8G8B8A8_UNORM` ，然后再用 SaveToWICFile 保存。
+
 * [返回目录](#JUMP_POINT_MENU)
 
 <h3 id = "JUMP_POINT_RENDER">渲染</h3>
@@ -127,5 +133,11 @@
     >   Ze = 2 * f * n / ((f-n) * (2.0 * Zv - (fv + nv)) / (fv - nv) - (f + n))
 
     当然，最后得到的结果是个负数，所以一般手动加上一个-号。
+
+*  `early-z`
+
+    在通常的流水线内，深度测试执行在PS之后。因为可以在PS里边进行深度的偏移。但是在在光栅化之后，在执行PS之前，会对光栅化之后的像素进行的一个预先的深度测试。这个测试会让被遮挡的像素跳过PS直接被抛弃。这个测试是GPU提供的功能，对应用透明，也就是说开不开启完全由GPU决定。而决定这个是否开启的主要因素是是否开启深度测试和是否在PS中是否进行深度偏移。
+
+    所以对于在不透明渲染阶段内，优先渲染靠近视点的物体，能减少GPU开销。
 
 * [返回目录](#JUMP_POINT_MENU)
