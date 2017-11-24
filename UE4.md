@@ -51,6 +51,10 @@
 
     比如说一个 Custon node 的输入节点是 Tex ,那么能获取到的是纹理 Tex 和 TexSampler ，后者则是 SamplerState。
 
+*   RenderTarget
+
+    创建一个RenderTarget，如果需要绘制一个Rendertarget，需要调出Begin DrawCanvas To Render Target节点，从获取的到Canvas里边设置要绘制的信息，然后调用End DrawCanvasToRenderTarget关闭绘制。
+
 * [返回目录](#JUMP_POINT_MENU)
 
 <h3 id = "JUMP_POINT_PROCEDURE_ANALYZE">流程分析</h3>
@@ -417,3 +421,76 @@
     然后尝试编译。 有兴趣可以看看 FMaterial::BeginCompileShaderMap 。。。
 	
     最后将 GameThreadShaderMap 赋值给 RenderingThreadShaderMap 。
+
+* UMaterialInstance 材质变量输入
+
+    `void UMaterialInstance::UMaterialInstance(FName ParameterName, class UTexture* Value);`
+        从 `TArray<struct FTextureParameterValue> UMaterialInstance::TextureParameterValues` 查找所有的材质参数。
+            如果不存在，就新建一个空的实例。
+        判断该实例是否是输入的实例，如果不是，则赋值，并且调用  `GameThread_UpdateMIParameter` 在渲染线程中更新数据。
+            -> 在渲染线程中，对调用 `FMaterialInstanceResource* UMaterialInstance::Resources[3]` 调用 `template <typename ValueType> void FMaterialInstanceResource::RenderThread_UpdateParameter(const FName Name, const ValueType& Value)`，在这个函数中将把这个名字的UTexture加入到 `TArray<TNamedParameter<const UTexture*> > FMaterialInstanceResource::TextureParameterArray`中。
+        最后调用 `void CacheMaterialInstanceUniformExpressions(const UMaterialInstance* MaterialInstance)`。
+            这里面对 `Resources[0]` 调用 `void FMaterialRenderProxy::CacheUniformExpressions_GameThread()` 里面渲染线程内部加入一行命令，对自身调用 `void FMaterialRenderProxy::CacheUniformExpressions()`
+                -> 里面会遍历所有的FeatureLevel，然后获取对应的FMaterial，用自身和获取到的 FMaterial 构建 FMaterialRenderContext，并作为参数调用 `void FMaterialRenderProxy::EvaluateUniformExpressions(FUniformExpressionCache& OutUniformExpressionCache, const FMaterialRenderContext& Context, FRHICommandList* CommandListIfLocalMode) const`
+                    -> 然后就是重新设置一下啥啥东西的。。。
+
+
+* 一些宏定义命令分析
+
+    ```
+    ENQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_DECLARE_TEMPLATE(TypeName,TemplateParamName,{ParamTypeX, ParamNameX, ParamValueX}...,Code)
+    -> 
+        template <typename TemplateParamName> \
+	    NQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_DECLARE_OPTTYPENAME(TypeName,{ParamTypeX, ParamNameX, ParamValueX}...,typename,Code)
+
+    ENQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_DECLARE_OPTTYPENAME(TypeName,{ParamTypeX, ParamNameX, ParamValueX}...,OptTypename,Code)
+    ->
+        class EURCMacro_##TypeName : public FRenderCommand \
+	    { \
+	    public: \
+		    EURCMacro_##TypeName({OptTypename TCallTraits<ParamTypeX>::ParamType In##ParamNameX}...): \
+            {ParamNameX(In##ParamNameX)}...
+		    {} \
+		    TASK_FUNCTION(Code) \
+		    TASKNAME_FUNCTION(TypeName) \
+	    private: \
+            {ParamTypeX ParamNameX}...
+	    };
+    
+    TASK_FUNCTION(Code) 
+    ->
+        void DoTask(ENamedThreads::Type CurrentThread, const FGraphEventRef& MyCompletionGraphEvent) \
+		{ \
+			FRHICommandListImmediate& RHICmdList = GetImmediateCommandList_ForRenderCommand(); \
+			Code; \
+		} 
+
+    TASKNAME_FUNCTION(TypeName) 
+    ->
+		FORCEINLINE TStatId GetStatId() const \
+		{ \
+			RETURN_QUICK_DECLARE_CYCLE_STAT(TypeName, STATGROUP_RenderThreadCommands); \
+		}
+
+    ENQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_CREATE_TEMPLATE(TypeName,TemplateParamName,{ParamTypeX, ParamValueX}...)
+    ->
+        ENQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_CREATE(TypeName<TemplateParamName>,{ParamTypeX, ParamValueX}...)
+
+    ENQUEUE_UNIQUE_RENDER_COMMAND_{XXXPARAMETER}_CREATE(TypeName,{ParamTypeX, ParamValueX}...)
+    ->
+	    { \
+		    LogRenderCommand(TypeName); \
+		    if(ShouldExecuteOnRenderThread()) \
+		    { \
+			    CheckNotBlockedOnRenderThread(); \
+			    TGraphTask<EURCMacro_##TypeName>::CreateTask().ConstructAndDispatchWhenReady({ParamValueX}...); \
+		    } \
+		    else \
+		    { \
+			    EURCMacro_##TypeName TempCommand({ParamValueX}...); \
+			    FScopeCycleCounter EURCMacro_Scope(TempCommand.GetStatId()); \
+			    TempCommand.DoTask(ENamedThreads::GameThread, FGraphEventRef() ); \
+		    } \
+	    }
+
+    ```
