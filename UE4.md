@@ -494,3 +494,52 @@
 	    }
 
     ```
+
+    未分类
+
+    1，启动CVAR允许转存中间着色器
+        在 ConsoleVariables.ini 文件（通常位于 Engine/Config/ConsoleVariables.ini）中，启用下列 Cvar：
+            r.ShaderDevelopmentMode = 1
+            r.DumpShaderDebugInfo = 1
+            r.DumpShaderDebugShortNames = 1
+    
+    2，在调试时构建SHADERCOMPILEWORKER
+        将 ShaderCompileWorker的解决方案属性更改为Debug_Program
+
+    3，生成中间文件
+        此刻，您想要生成可调试的文件；启用 Cvar 将允许后续编译转储所生成的文件；要强制重建所有着色器，请在Engine/Shaders/Common.usf 中添加一个空格或进行更改，然后重新运行编辑器。这将重新编译着色器并转储Project/Saved/ShaderDebugInfo 文件夹中的所有中间文件。
+
+    4，转储的着色器的文件夹结构
+        让我们分析转储的文件的完整路径：
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        项目的根路径：
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        转储着色器的根路径： 
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        现在，对于每种着色器格式/平台，您可找到一个子文件夹，在本例中，这是 PC D3D Shader Model 5：
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        现在，对于每个材质名称都有一个对应的文件夹，并且有一个名为 Global 的特殊文件夹。在本例中，我们在 `M_Egg` 材质内：     
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        着色器分组在贴图内并按顶点工厂排序，而这些顶点工厂通常最终对应于网格/元件类型；在本例中，有一个“本地顶点工厂”：
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf
+        最后，下一路径是特性的排列；因为我们早先已启用 r.DumpShaderDebugShortNames=1，所以名称已压缩（以减小路径长度）。如果将其设置为 0，那么完整路径将是：
+            D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\FLocalVertexFactory\TBasePassPSFNoLightMapPolicy\BasePassPixelShader.usf
+        在该文件夹中，有一个批处理文件和一个 usf 文件。这个 usf 文件就是要提供给平台编译器的最终着色器代码。您可通过这个批处理文件来调用平台编译器，以查看中间代码。
+        使用 SHADERCOMPILEWORKER 进行调试
+
+    从 4.11 版开始，我们为 ShaderCompileWorker (SCW) 添加了一项功能，使其能够调试平台编译器调用；命令行如下所示：
+
+        PathToGeneratedUsfFile -directcompile -format=ShaderFormat -ShaderType -entry=EntryPoint
+        PathToGeneratedUsfFile 是 ShaderDebugInfo 文件夹中的最终 usf 文件
+        ShaderFormat 是您想要调试的着色器平台格式（在本例中，这是 PCD3D_SM5）
+        ShaderType 是 vs/ps/gs/hs/ds/cs 中的一项，分别对应于“顶点”、“像素”、“几何体”、“物体外壳”、“域”和“计算”着色器类型
+        EntryPoint 是 usf 文件中此着色器的入口点的函数名称
+
+    例如，D:\UE4\Samples\Games\TappyChicken\Saved\ShaderDebugInfo\PCD3D_SM5\M_Egg\LocalVF\BPPSFNoLMPolicy\BasePassPixelShader.usf-format=PCD3D_SM5 -ps -entry=Main
+
+    现在，您可以对 D3D11ShaderCompiler.cpp 中的 CompileD3D11Shader() 函数设置断点，通过命令行运行 SCW，并且应该能够开始了解如何调用平台编译器。
+
+    有关此主题的更多信息，请参阅虚幻引擎文档的以下两个页面：
+
+    [着色器开发](https://docs.unrealengine.com/latest/INT/Programming/Rendering/ShaderDevelopment/index.html)
+    [HLSL 交叉编译器](https://docs.unrealengine.com/latest/INT/Programming/Rendering/ShaderDevelopment/HLSLCrossCompiler/index.html)
