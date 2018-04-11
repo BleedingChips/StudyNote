@@ -569,3 +569,12 @@
     ```
 
 一旦虚幻4项目的帧率低于30，UE4将会禁止粒子碰撞以保证帧数保持在30以上。ISO项目默认锁30，需要在Project Settings > GeneralSettings > Framerate中修改 
+
+UE4打包问题
+
+ERROR : System Exception：Couldn't update resource
+
+解决办法：把 Save 和 Intermediate 文件夹下的文件删除，然后重新打包即可。
+
+HZB Steup Mips在GPU Profile里边占用了大量时间。
+DX11的问题，将在DX12中修复。
