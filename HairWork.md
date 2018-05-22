@@ -5,11 +5,13 @@ HairWork需要核弹厂(NVIDIA)的特化版UE4，要获取该版本，有下面�
     1. 在[Github](https://github.com/)上申请一个账号。
     1. 在[虚幻官网](https://www.unrealengine.com/)中创建账户，并在账户设置中链接的你Github账号。链接后会自动加入EPICGame的组织，可以获取其源码以编译。
     1. 在[NVIDIA的GameWork](https://developer.nvidia.com/gameworks)中创建账号，并加入GameWorksAccessTeam，并链接你的Github账号。（貌似需要审核啥的。。。）
-    1. 从[NVIDIA的Github](https://github.com/NvPhysX/UnrealEngine)上Fork到你的本地仓库。这个仓库上有很多分支，但我们需要的只有HairWork。然后需要将这个仓库clone到你的本地（download只能下载mater分支，里面只有个说明啥的，没用。然后Github Destop上下载经常挂，所以还是推荐使用命令行，代码：`github clone https://github.com/aaabbb/UnrealEngine.git J:\github -b HairWorks --depth 1`其中 `aaabbb`表示你的账户，`J:\github`表示你的地址，然后 `-b HairWorks`表示只要这个分支 `--depth 1` 表示只要最近的提交记录）。
+    1. 从[NVIDIA的Github](https://github.com/NvPhysX/UnrealEngine)上Fork到你的本地仓库。这个仓库上有很多分支，但我们需要的只有HairWork。然后需要将这个仓库clone到你的本地（download只能下载mater分支，里面只有个说明啥的，没用。然后Github Destop上下载经常挂，所以还是推荐使用命令行，代码：`git clone https://github.com/NvPhysX/UnrealEngine.git J:\github -b HairWorks --depth 1`其中 `J:\github`表示你的地址，然后 `-b HairWorks`表示只要这个分支 `--depth 1` 表示只要最近的提交记录）。
     1. 编译即可
         1. 点Setup跑进度。
         1. 点`GenerateProjectFile.bat`生成vs2015的工程文件，或者调用`GenerateProjectFile -2017`生成vs2017的工程文件。
         1. 然后打开工程，编译即可。
+
+PS: .APX的文件格式可以从[载入代码](https://github.com/NVIDIAGameWorks/HairWorks/blob/master/src/Nv/HairWorks/Internal/NvHairSdkImpl.cpp)里逆向。
 
 准备头发资源。
 
