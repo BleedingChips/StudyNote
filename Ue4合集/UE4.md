@@ -578,3 +578,6 @@ ERROR : System Exception：Couldn't update resource
 
 HZB Steup Mips在GPU Profile里边占用了大量时间。
 DX11的问题，将在DX12中修复。
+
+文档找不到，改语言。
+ZHO， CHN（中文），INT（英文）

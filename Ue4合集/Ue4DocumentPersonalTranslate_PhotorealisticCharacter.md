@@ -1,4 +1,5 @@
 [Original Page](https://docs.unrealengine.com/en-us/Resources/Showcases/PhotorealisticCharacter)
+[中文地址泪崩](https://docs-origin.unrealengine.com/latest/CHN/Resources/Showcases/PhotorealisticCharacter/index.html)
 相片级角色
 
 这个展示（文章？）的目的是演示如何使用高品质的角色渲染技术，这个所展示的技术与Paragon(EPIC出的一个MOBA游戏)中的角色所用的技术十分相似。要观看这个展示，只用打开工程，在编辑器下点开始，然后就能像电影一样环绕地观看了。

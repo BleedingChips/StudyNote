@@ -197,6 +197,27 @@ float worley_noise(float2 n)
 
 ---
 
+# 抗锯齿(Anti-Aliasing)
+
+* SSAA(Super Sampling AA)
+    * 渲染到2x2倍大的RT，然后再采样到目标贴图上
+        * 简单粗暴，最完美，但是性能消耗大。
+* MSAA(Multi-Sampling AA)
+    * 只在光栅化阶段运行，有硬件支持。在像素内部，会平均分成数个覆盖样本(Coverage sample)，然后计算三角形覆盖的像素样本的的个数，得到三角形的属性对该像素的贡献权重，生成shader，然后重新计算像素的值。例如说4xMSAA就是将一个像素分成四个样本。
+        * SSAA的提升版，因为多了几步的操作，所以有效率有所影响，但是不需要2x2的RT，减缓宽带压力。但是与延迟渲染不怎么兼容（因为延迟渲染的操作是在最后面来着）。
+* FXAA(Fast Approximate anti-aliasing)
+    * 后处理，查找深度，若边界有突变，或者颜色值有突变，那么也就是说这是边界上的点，之后根据像素被标记为边界的程度计算最终颜色。
+        * 性能高，但是会糊。
+* TemporalAA(TXAA) [UE4详见](https://de45xmedrsdbp.cloudfront.net/Resources/files/TemporalAA_small-59732822.pdf)
+    对于每一帧中的物体：
+    * 对帧上的每一个Object，计算出每一个动态属性的改变函数。
+    * 在过滤区间上确定物体覆盖的区间
+    对于每一个像素：
+    * 去顶
+    
+
+
+
 # 杂项
 
 * 在射线上，线性化后的深度差不等于射线上两像素的世界坐标距离。
