@@ -109,3 +109,25 @@
 
     [Original Page](https://docs.unrealengine.com/en-us/Resources/Showcases/PhotorealisticCharacter)
     [中文地址泪崩](https://docs-origin.unrealengine.com/latest/CHN/Resources/Showcases/PhotorealisticCharacter/index.html)
+
+---
+* stat
+    * `DECLARE_STATS_GROUP(TEXT("A"), B, STATCAT_Advanced);`
+        声明一个`B`类型的STAT，通过`stat A`命令打开统计窗口。
+    * `DECLARE_CYCLE_STAT(TEXT("D"), C, B);`
+        定义一个`B`类型的STAT的实体，其实体名字为C，且在stat窗口的描述中为`D`。
+    * `SCOPE_CYCLE_COUNTER(C);`
+        在代码中统计。
+
+---
+* 支持的dds文件（测试时间是4.18）。
+    * 只支持 `A8R8G8B8` 和 `RGBA16F` 两种像素格式。
+    * 只支持`2D`和`CubeMap`两种纹理。
+
+---
+* r.TemporalAASamples
+    控制TAA的锐度。
+
+---
+
+* 在命令行里边输入help可以打开一个网页以查找所有的命令。

@@ -16,5 +16,19 @@ void SContentBrowser::ImportAsset( const FString& InPath )
 最终得到了 对应的Object。
 然后 调用 FAssetRegistryModule::AssetCreated 创建asset
 
+1. 继承 UFactory
+1. 在构造函数中：
+    ```cpp
+    //支持的生成的数据的类型。
+    Super::SupportedClass = UTexture2D::StaticClass();
+    //支持的文件后缀，可添加多个，格式为 extension;description
+    //这个将影响文件浏览器和映射对应的Factory
+	Formats.Add(L"dds;dds File");
+    //支持在编辑器模式下装载。
+	Super::bEditorImport = true;
+    ```
+1. 覆写`bool UFactory::FactoryCanImport(const FString& Filename)`，查看是否能够生成。
+1. 覆写`UObject* UFactory::FactoryCreatexxxxx`，装载的实现函数。
+
 
 
