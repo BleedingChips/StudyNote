@@ -82,8 +82,9 @@
 ---
 
 * 用于启动vs2017
-    在`/Script/SourceCodeAccess.SourceCodeAccessSettings`文件重加入一行
+    在DefaultEditorPerProjectUserSettings.ini 文件中加入一行
     ```
+    [/Script/SourceCodeAccess.SourceCodeAccessSettings]
     PreferredAccessor=VisualStudio2017
     ```
 
