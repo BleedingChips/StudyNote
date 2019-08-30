@@ -63,6 +63,50 @@ LOD
     * Lightmap Density 表示光照贴图的密度。精良密度小一点。（可以调整）Window下Statistics可以看到光照贴图的大小。
     * Texture 上可以调整Texture的大小。
 
+* Pipeline
+    * GPUParticles_PreRender 更新GPU粒子的属性。
+    * PrePass DDM_AllOpaque PreZ，更新所有的模型深度。
+    * ComputeLightGrid 光源的剔除，有点模型的可见性剔除。与光源的数量相关。
+    * BeginOcclusionTests 可见性检测。
+    * BuildHZB 创建多Mipmap等级的ZBuffer。
+    * ShadowDepths 生成全局的深度。
+    * CompositionBeforeBasePass 
+    * BeginRenderingGBuffer
+    * BasePass
+    * BeginRenderingCustomDepth
+    * CustomDepth
+    * RenderVelocities
+    * ResolveSceneDepthTexture
+    * LightCompositionTasks_PreLighting
+        * 延迟贴花和AO AO的消耗可以在Postpost 里边的Fade Out Distance 和 Fade Out Rate 调。
+    * ClearTranslucentVolumeLighting
+    * DirectLighting
+    * FilterTranslucentVolume
+    * SkyLightDiffuse
+    * ScreenSpaceReflections
+    * TAA ScreenSpaceReflectionPS
+    * ReflectionEnvironmentAndSky
+    * ResolveSceneColor
+    * CompositionAfterLighting
+        * 处理次表面散射材质。
+    * ExponentiaHeightFog
+    * BeginRenderingSceneColor
+    * GPUParticles_PostRenderOpaque
+    * Translucency
+    * Translucency
+    * Distortion
+    * RenderLightShaftBloom
+    * ResolveSceneColor
+    * PostProcessing
+
+Quad Overdraw
+
+    GPU渲染机制的问题，就是GPU绘制一个像素时是同时将周围几个像素一起绘制，并选取其中有用的。如果有用的太少，就是造成浪费。解决方案是对于某些细长的三角形可以通过添加分割。或者一些半透明的多加顶点进行分割。
+
+Particle Trimming
+    
+    通过增加顶点数来减少像素填充率
+
 * 动态光与静态光
     动态光多的要保证Actor的数量少。
     静态光不能保证阴影效果，但是能够放更多的Actor。
