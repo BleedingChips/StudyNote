@@ -72,29 +72,29 @@ LOD
     * ShadowDepths 生成全局的深度。
     * CompositionBeforeBasePass 
     * BeginRenderingGBuffer
-    * BasePass
-    * BeginRenderingCustomDepth
-    * CustomDepth
-    * RenderVelocities
-    * ResolveSceneDepthTexture
+    * BasePass 绘制Gbuffer
+    * BeginRenderingCustomDepth 
+    * CustomDepth 绘制自定义深度
+    * RenderVelocities 绘制速度
+    * ResolveSceneDepthTexture 不知道。
     * LightCompositionTasks_PreLighting
         * 延迟贴花和AO AO的消耗可以在Postpost 里边的Fade Out Distance 和 Fade Out Rate 调。
     * ClearTranslucentVolumeLighting
-    * DirectLighting
-    * FilterTranslucentVolume
-    * SkyLightDiffuse
+    * DirectLighting 直接光照
+    * FilterTranslucentVolume 
+    * SkyLightDiffuse 
     * ScreenSpaceReflections
     * TAA ScreenSpaceReflectionPS
     * ReflectionEnvironmentAndSky
     * ResolveSceneColor
     * CompositionAfterLighting
         * 处理次表面散射材质。
-    * ExponentiaHeightFog
+    * ExponentiaHeightFog 
     * BeginRenderingSceneColor
-    * GPUParticles_PostRenderOpaque
+    * GPUParticles_PostRenderOpaque 
     * Translucency
     * Translucency
-    * Distortion
+    * Distortion 材质属性？
     * RenderLightShaftBloom
     * ResolveSceneColor
     * PostProcessing
