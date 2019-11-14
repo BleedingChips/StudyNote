@@ -1,0 +1,2 @@
+SV_RenderTargetArrayIndex 在GS种使用，用以标记在RT为3D或者RT为TextureArray时的位置。
+
