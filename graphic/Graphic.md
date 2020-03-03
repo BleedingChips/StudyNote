@@ -53,6 +53,8 @@ float2 rand2(float2 n)
 }
 ```
 
+[额外参考](https://github.com/ronja-tutorials/ShaderTutorials/blob/master/Assets/028_Voronoi_Noise/Random.cginc)
+
 * [返回上一级](#玄学)
 
 ---
@@ -148,10 +150,10 @@ float worley_noise(float2 n)
     for (uint count = 0; count < 9; ++count)
     {
         float2 dir = float2((count / 3) % 3, count % 3) - 1.0;
-        float2 p = floor(n / 5.0) + dir;
+        float2 p = floor(n) + dir;
         //rand 是一个输入二维向量并输出随机二维向量的随机函数。
         float2 rate = rand(p);
-        float2 pre_rate = rate + dir - frac(n / 5.0);
+        float2 pre_rate = rate + dir - frac(n);
         float d = length(pre_rate);
         dis = min(dis, d);
     }
