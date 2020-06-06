@@ -1,6 +1,7 @@
 在UE4 4.24下的头发资源生成和模拟（以Maya XGen为例）
 1. 头发资源准备
-    Ue4中需要的头发曲线分为两个种，一个是用来产生物理效果的【导线】，另一些则是根据【导线】的位置进行插值的【发线】。对于传统的直发，也可以直接提供【发线】，在导入的时候引擎会自动生成【导线】，但对于一些特殊的头发造型，如卷发，则需要同时提供【导线】与【发线】。
+    Ue4中需要的头发曲线分为两个种，一个是用来产生物理效果的【导线】，另一些则是根据【导线】的位置进行插值，并用于造型的【发线】。对于传统的直发，也可以直接提供【发线】，在导入的时候引擎会自动生成【导线】，但对于一些特殊的头发造型，如卷发，则需要同时提供【导线】与【发线】。另外，导线的个数和每条的顶点数直接影响头发的物理效果，同时也会对性能造成很大影响。同样的，发线则直接影响头发的造型，但对性能的影响相比导线较弱，但并不是弱到可以忽略的地步。
+    
     关于xGen生成头发的过程不再累述，具体可以参考网上的教程，或者参考[官方文档](https://docs.unrealengine.com/zh-CN/Engine/HairRendering/XgenGuidelines/index.html)这里默认已经生成好头发丝的两种曲线，即【导线】与【发线】，如下图：
 
     ![图片](image/UE4Hair/img_1.png)
@@ -9,12 +10,14 @@
 
 1. 属性赋予
 
-    在UE4中，所需要的[属性](https://docs.unrealengine.com/zh-CN/Engine/HairRendering/AlembicForGrooms/index.html)中，比较重要的有如下几个：
+    在UE4，所需要的[属性](https://docs.unrealengine.com/zh-CN/Engine/HairRendering/AlembicForGrooms/index.html)中，比较重要的有如下几个：
 
     |名字|意义|类型|范围|
     |---|---|---|---|
     |groom_ guide|该头发是否是导线|int8/16/32|常量/统一 0=非导线/1=导线|
     |groom_group_id|头发分组ID|int32|常量/统一 0~INT_MAX|
+
+    其余的属性用以控制由曲线产生的头发，和被用于头发的材质中参与渲染。
 
     除此之外，在Maya中导出Alembic格式文件时，需要添加几个[属性](https://graphics.pixar.com/usd/docs/Maya-USD-Plugins.html)以控制导出，比较重要的如下几个：
 
@@ -44,13 +47,21 @@
     ```
 
     添加完毕后，可以手动在附加属性中自由编辑。
+
 1. 资源导出
+
     选中所有要导出的曲线：
+
     ![图片](image/UE4Hair/img_2.png)
+
     导出配置如下：
+
     ![图片](image/UE4Hair/img_3.png)
+
     ![图片](image/UE4Hair/img_4.png)
+
     即可。
+
 1. UE4设置
 
     转至 编辑（Edit） > 项目设置（Project Setting），以打开项目设置。在以下各个部分，启用这些设置：
@@ -59,6 +70,7 @@
     * 动画（Animation）> 性能（Performance）> 禁用 Tick Animation on Skeletal Mesh Init（@@@） 
     
     转至 编辑（Edit） > 插件（Plugins），打开插件浏览器窗口。在 几何体（Geometry） 类别下，启用这些插件：
+
     * Alembic Groom Importer
     * Groom 
 

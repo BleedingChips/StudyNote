@@ -171,4 +171,34 @@
     * `FShaderUniformBufferParameter` 绑定着色器变量的。
     * `template<typename TBufferStruct> class TShaderUniformBufferParameter` 同上，绑定特定着色器变量。
 
+* Shader里读取SceneTexture
+
+    ```hlsl
+    uint StencilTextureIndex = 8; // SceneTexture的表示，具体ID可以看材质节点SceneTexture中的顺序
+    float2 UV = ClampSceneTextureUV(ViewportUVToSceneTextureUV(TexCoord, StencilTextureIndex), StencilTextureIndex); // UV修正
+    float4 SampleResult = SceneTextureLookup(UV, StencilTextureIndex, false); // 采样，最后一个参数表示是否使用就近点采样 
+    ```
+
+* Shader里读取非线性DepthTexture
+
+    ```hlsl
+    uint StencilTextureIndex = 1;
+        float2 UV = ClampSceneTextureUV(ViewportUVToSceneTextureUV(TexCoord, StencilTextureIndex), StencilTextureIndex); // UV修正
+    #if SCENE_TEXTURES_DISABLED
+	    float SceneDepth = SCENE_TEXTURES_DISABLED_SCENE_DEPTH_VALUE;
+    #else
+        float SceneDepth = Texture2DSampleLevel(SceneTexturesStruct.SceneDepthTexture, SceneTexturesStruct.SceneDepthTextureSampler, UV, 0).r;
+    #endif
+    ```
+
+    由非线性转成线性：
+
+    ```hlsl
+    #if SCENE_TEXTURES_DISABLED
+	    return SCENE_TEXTURES_DISABLED_SCENE_DEPTH_VALUE;
+    #else
+	    return ConvertFromDeviceZ(SceneDepth);
+    #endif
+    ```
+
 
