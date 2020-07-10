@@ -216,9 +216,6 @@ float worley_noise(float2 n)
     * 在过滤区间上确定物体覆盖的区间
     对于每一个像素：
     * 去顶
-    
-
-
 
 # 杂项
 
@@ -368,3 +365,5 @@ float worley_noise(float2 n)
     SV_GroupIndex ： d * a + b * e + f * c，同上。
     SV_GroupID ： 在线程组中，其值唯一，与 abc无关。
     SV_DispatchThreadID ： 所有线程唯一，表现为 SV_GroupID * SV_GroupThreadID 。
+
+*   为了防止PreZ被关掉，可以尝试写入SV_DepthGreater或SV_DepthLessEqual（当使用深度倒数的时候，比如1.0为最近，0.0为最远）。并且当你的PS使用UAV的时候，PreZ是默认不会使用的。但是使用earlydepthstencil可以强制使用。
