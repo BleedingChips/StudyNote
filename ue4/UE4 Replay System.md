@@ -84,14 +84,25 @@
     * 将 FGotoTimeInSecondsTask 存入 UDemoNetDriver::QueuedReplayTasks 中。
     * 调用 UDemoNetDriver::ProcessReplayTasks 。
       * 如果 UDemoNetDriver::ActiveReplayTask 为空，即有其他正在执行，找 UDemoNetDriver::QueuedReplayTasks 的第一个 FQueuedReplayTask 赋值到 UDemoNetDriver::ActiveReplayTask 即当前，然后调用 FQueuedReplayTask::StartTask 。
-        * 派生到 FQueuedReplayTask::StartTask 
+        * 派生到 FGotoTimeInSecondsTask::StartTask 
         * 记录当前的回放时间和需要跳转到的回放时间。
         * 检查当前 UDemoNetDriver 是否有 DeltaCheckpoint 。
         * 生成一个 FGotoTimeInSecondsTask::CheckpointReady 的回调，然后调用 INetworkReplayStreamer::GotoTimeInMS 。
           * 以 FLocalFileNetworkReplayStreamer::GotoTimeInMS 为例 
           * 查看是否有当前调用的 FileRequest ，如果是，则以 FGotoResult 的默认值调用 FGotoTimeInSecondsTask::CheckpointReady 。
+          * 如果没有，则在 FLocalFileNetworkReplayStreamer::CurrentReplayInfo 里边的 Checkpoints 找到最近的一个 Checkpoints 的 Index ，如果找不到则用 INDEX_NONE 作为 Index ，然后用这个 Index 调用 INetworkReplayStreamer::GotoCheckpointIndex 。
+            * 如果找不到对应的 CheckPoint 则重置整个流，并返回。
+            * 如果找的到，并且 CheckPoint 的类型是 EReplayCheckpointType::Delta ，则重新打开文件，遍历所有的 CheckPoint ，合并数据，然后调用回调并返回。
+            * 如果找的到，并且 CheckPoint 的类型是 EReplayCheckpointType::Full ，找与目标时间最近的CheckPoint ，然后调用回调并返回。
+          * 在 FGotoTimeInSecondsTask::CheckpointReady 中，如果完成读取，则将结果写入 FGotoTimeInSecondsTask::GotoResult 中，否则，则还原 Device 的 DemoCurrentTime ，并且以 false 调用 UDemoNetDriver::NotifyGotoTimeFinished 。
           * 
+        * 暂停 channel 。
       * 如果 UDemoNetDriver::ActiveReplayTask 有效，则调用 FQueuedReplayTask::Tick ，如果返回为 false ，则调用 FQueuedReplayTask::ShouldPausePlayback 并返回。否则，则清空 UDemoNetDriver::ActiveReplayTask 并且返回 false 。
+        * 以 FGotoTimeInSecondsTask::Tick 为例。
+        * 一直轮询 FGotoTimeInSecondsTask::GotoResult 是否有效，若有效，则调用 FPendingTaskHelper::LoadCheckpoint 。
+          * 调用 UDemoNetDriver::LoadCheckpoint ，重置Actor的主要逻辑。
+
+      * UDemoNetDriver::SkipTime
 
 **回放完成**
 
