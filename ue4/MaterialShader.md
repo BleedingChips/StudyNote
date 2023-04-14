@@ -159,3 +159,77 @@
     // Returning positive sRGB values
     return max( 0, LinearColor );
     ```
+
+* 网易KM分享 材质系统 23-4-14
+
+    * 一个材质，可以有多个变种（变体），既通过不同的设置，如是否接受点光/顶点类型/静态开关/阴影（实际上就是根据不同的设置由不同的宏开启编译），都保存在ShaderMap里边。
+
+    * 材质的编译流程：
+
+        1. Shader宏 + Material.ush + LocalVertexFactory.ush + BasePassPixelShader.usf --（mcpp 宏展开）--> HLSL
+
+        2. （GLSL） HLSL --(hlslcc 生成中间格式，编译优化)--> IR --（GLSLBackend IR翻译）--> GLSL --> FShader --> FMaterialShaderMap
+
+        3. （VK） HLSL --(hlslcc 生成中间格式，编译优化)--> IR --（VulkanBackend IR翻译）--> GLSL --(glslang)--> Spirv --> FShader --> FMaterialShaderMap
+
+        4. (Metal) HLSL --(Shader Conductor)--> Spirv --(Shader Conductor)--> MetalSource --(Metal工具链)--> MetalLib(字节码) --> FShader --> FMaterialShaderMap
+
+    * Shaderd Material 勾选后（项目设置），重复的Shader会从ShaderMap内提取出来。.uasset内的Shader代码会抽离到.ushaderbytecode中。（FShaderCodeLibrary）
+
+    * 新材质类型 Substraye:Slab
+
+        1. 独特的优化手段：Parameter Bleding
+        2. 调试：r.strats.visulizemode
+
+    * 解决包体过大：
+
+        1. 减少材质变体
+        1. 静态开关依赖归并
+        1. 删除代码中的Light Map Policy
+
+    * 运行时编译Shader卡顿：
+        1. PSO Cache
+        2. 做工具手动跑
+
+    * 减少时钟数：
+
+        1. 使用半精度计算
+        1. 减少寄存器的占用
+        1. 使用Custommize uv
+        1. 手写custom node
+        1. PS计算移动到VS计算（只针对近端物体）
+        1. 合理使用分支：
+            ```hlsl
+
+            [branch]
+            if(UniformPar)
+            {
+                // 只会跑一个分支，复杂代码
+            }else{
+
+            }
+
+            [flatten]
+            if(UniformPar)
+            {
+                // 两个分支都会跑，简单代码
+            }else{
+
+            }
+
+            非Uniform需要注意分支连贯性，就是尽量让相同像素内的代码都走同一套逻辑。
+
+            ```
+        1. 三元操作符很快，不要用乘法
+        1. 不要特意矢量化代码，向量/矩阵尽量直接用。
+        1. 优化贴图采样（mali公式，贷款等于功率）
+        1. 采样时尽量避免非压缩贴图和HDR贴图
+        1. HDR考虑RGBM编码
+        1. 避免顶点采样(VTF)一张每帧都绘制的RT（VS和PS可并行，可让他们不产生依赖）
+        1. 减少寄存器使用（能更多的并行）
+    
+    * 如何处理角色被叠加多种Buff从而需要叠加多种材质效果
+
+        1. 该引擎，新Pass
+        1. 材质里面通过动态分支写死
+        1. UE5.1 有一个新的Translucent material overlap (新拉起一个Pass)
